@@ -1,0 +1,19 @@
+name: CommandStore
+main: org.cockshott.CommandStore
+version: 1.0
+author: EnriqueMark
+description: 命令行商店
+depend: [MultiCurrency]
+commands:
+  shop:
+    description: 商店插件的英文主命令
+    usage: /<command> [search|buy|sell] [参数...]
+    aliases: [shangdian, sd]
+  shangdian:
+    description: 商店插件的中文主命令
+    usage: /<command> [sou|mai|chu] [参数...]
+    aliases: [shop, sd]
+  sd:
+    description: 商店插件的简写主命令
+    usage: /<command> [sou|mai|chu] [参数...]
+    aliases: [shop, shangdian]
