@@ -72,6 +72,7 @@ public class ShopManager {
         return lastSearchResults.getOrDefault(player.getUniqueId(), new ArrayList<>());
     }
 
+    //购买操作
     public void buyItem(Player player, ShopItem shopItem, int amount) {
         if (amount > shopItem.getStock()) {
             player.sendMessage(MessageUtil.color("&c该物品库存不足。"));
@@ -116,6 +117,7 @@ public class ShopManager {
         economyManager.depositMoney(shopItem.getSellName(), totalCost, currency,String.format("售出 %d 个 %s", amount, shopItem.getName()));
     }
 
+    //出售操作
     public void sellItem(Player player, int amount, String currency, Integer price) {
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand == null || itemInHand.getType().isAir()) {
@@ -128,7 +130,7 @@ public class ShopManager {
             return;
         }
     
-        String itemName = itemInHand.getType().name();
+        String itemName = ItemSerializer.getTranslate(itemInHand);
         String itemHash = ItemSerializer.gethashString(itemInHand);
     
         ShopItem newShopItem = new ShopItem(
@@ -154,6 +156,7 @@ public class ShopManager {
             amount, itemName, price, currency)));
     }
 
+    //撤回出售
     public boolean withdrawItem(Player player, int itemId) {
         ShopItem item = databaseManager.getShopItem(itemId);
         if (item == null) {
