@@ -26,16 +26,13 @@ public class ShopManager {
     private final CommandShopPlugin plugin;
     private final DatabaseManager databaseManager;
     private final EconomyManager economyManager;
-    private final ItemManager itemManager;
     private Map<UUID, List<ShopItem>> lastSearchResults = new HashMap<>();
     private Map<String, String> map;
 
-    public ShopManager(CommandShopPlugin plugin, DatabaseManager databaseManager, EconomyManager economyManager,
-            ItemManager itemManager) {
+    public ShopManager(CommandShopPlugin plugin, DatabaseManager databaseManager, EconomyManager economyManager) {
         this.plugin = plugin;
         this.databaseManager = databaseManager;
         this.economyManager = economyManager;
-        this.itemManager = itemManager;
         File modFolder = new File("mods");
         TranslationManager manager = new TranslationManager(plugin, modFolder);
         this.map = manager.getMergedTranslations(manager.loadOriginalTranslations());
@@ -93,7 +90,7 @@ public class ShopManager {
             return;
         }
 
-        if (!itemManager.hasEnoughSpace(player, itemToGive, amount)) {
+        if (!ItemManager.hasEnoughSpace(player, itemToGive, amount)) {
             player.sendMessage(MessageUtil.color("&c你的背包空间不足。"));
             return;
         }
@@ -105,7 +102,7 @@ public class ShopManager {
             return;
         }
 
-        itemManager.addItems(player, itemToGive, amount);
+        ItemManager.addItems(player, itemToGive, amount);
         databaseManager.updateItemStock(shopItem.getId(), -amount);
         shopItem.setStock(shopItem.getStock() - amount);
         if (shopItem.getStock() == 0) {
@@ -125,7 +122,7 @@ public class ShopManager {
             return;
         }
     
-        if (!itemManager.hasEnoughItems(player, itemInHand, amount)) {
+        if (!ItemManager.hasEnoughItems(player, itemInHand, amount)) {
             player.sendMessage(MessageUtil.color("&c你没有足够的物品来出售。"));
             return;
         }
@@ -150,9 +147,9 @@ public class ShopManager {
             return;
         }
     
-        itemManager.removeItems(player, itemInHand, amount);
+        ItemManager.removeItems(player, itemInHand, amount);
     
-        player.sendMessage(MessageUtil.color(String.format("&a你成功上架了 %d 个 %s，单价 %.2f %s。",
+        player.sendMessage(MessageUtil.color(String.format("&a你成功上架了 %d 个 %s，单价 %d %s。",
             amount, itemName, price, currency)));
     }
 
@@ -175,7 +172,7 @@ public class ShopManager {
             return false;
         }
     
-        if (!itemManager.hasEnoughSpace(player, itemToGive, item.getStock())) {
+        if (!ItemManager.hasEnoughSpace(player, itemToGive, item.getStock())) {
             player.sendMessage(MessageUtil.color("&c你的背包空间不足，无法撤回商品。"));
             return false;
         }
@@ -186,7 +183,7 @@ public class ShopManager {
             return false;
         }
     
-        itemManager.addItems(player, itemToGive, item.getStock());
+        ItemManager.addItems(player, itemToGive, item.getStock());
         player.sendMessage(MessageUtil.color(String.format("&a你成功撤回了 %d 个 %s。", 
             item.getStock(), item.getName())));
     

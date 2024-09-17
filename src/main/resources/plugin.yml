@@ -1,5 +1,5 @@
 name: CommandStore
-main: org.cockshott.CommandStore
+main: org.cockshott.commandshop.CommandShopPlugin
 version: 1.0
 author: EnriqueMark
 description: 命令行商店

@@ -12,12 +12,10 @@ import com.zjyl1994.minecraftplugin.multicurrency.MultiCurrencyPlugin;
 import javax.sql.DataSource;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.h;
 
 public class CommandShopPlugin extends JavaPlugin {
     private DatabaseManager databaseManager;
     private EconomyManager economyManager;
-    private ItemManager itemManager;
     private ShopManager shopManager;
     private Config config;
     private static CommandShopPlugin instance;
@@ -34,7 +32,7 @@ public class CommandShopPlugin extends JavaPlugin {
         // 初始化管理器
         this.databaseManager = new DatabaseManager(this,hikari);
         this.economyManager = new EconomyManager(this, databaseManager);
-        this.shopManager = new ShopManager(this, databaseManager, economyManager, itemManager);
+        this.shopManager = new ShopManager(this, databaseManager, economyManager);
 
         // 注册命令
         ShopCommand shopCommand = new ShopCommand(this, shopManager);

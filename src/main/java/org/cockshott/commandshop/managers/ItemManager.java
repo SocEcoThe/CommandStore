@@ -20,7 +20,7 @@ public class ItemManager {
         return itemStack;
     }
     
-    public boolean hasEnoughItems(Player player, ItemStack item, int amount) {
+    public static boolean hasEnoughItems(Player player, ItemStack item, int amount) {
         int count = 0;
         for (ItemStack is : player.getInventory().getContents()) {
             if (is != null && is.isSimilar(item)) {
@@ -30,7 +30,7 @@ public class ItemManager {
         return count >= amount;
     }
 
-    public boolean hasEnoughSpace(Player player, ItemStack item, int amount) {
+    public static boolean hasEnoughSpace(Player player, ItemStack item, int amount) {
         int freeSpace = 0;
         for (ItemStack is : player.getInventory().getStorageContents()) {
             if (is == null || is.getType().isAir()) {
@@ -42,7 +42,7 @@ public class ItemManager {
         return freeSpace >= amount;
     }
 
-    public void removeItems(Player player, ItemStack item, int amount) {
+    public static void removeItems(Player player, ItemStack item, int amount) {
         ItemStack[] contents = player.getInventory().getContents();
         int remaining = amount;
         for (int i = 0; i < contents.length && remaining > 0; i++) {
@@ -60,7 +60,7 @@ public class ItemManager {
         player.updateInventory();
     }
 
-    public void addItems(Player player, ItemStack item, int amount) {
+    public static void addItems(Player player, ItemStack item, int amount) {
         ItemStack toGive = item.clone();
         toGive.setAmount(amount);
         player.getInventory().addItem(toGive);

@@ -13,7 +13,7 @@ public class TableRenderer {
         
         for (int i = 0; i < items.size(); i++) {
             ShopItem item = items.get(i);
-            player.sendMessage(MessageUtil.color(String.format("&8| &f%-4d&8| &f%-20s &8| &6%-8.2f &8| &a%-7d &8|", 
+            player.sendMessage(MessageUtil.color(String.format("&8| &f%-4d&8| &f%-20s &8| &6%-8d &8| &a%-7d &8|", 
                 i + 1, item.getName(), item.getPrice(), item.getStock())));
         }
         
