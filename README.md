@@ -1,69 +1,83 @@
-# CommandShop 插件使用指南
+# CommandShop 插件
 
-CommandShop 是一个功能强大的 Minecraft 商店插件，允许玩家搜索、购买、出售和管理物品。本指南将帮助您了解如何使用插件的各种功能。
+CommandShop 是一个基于 Spigot API 开发的 Minecraft 服务器商店插件。它允许玩家通过命令界面买卖物品，并且支持多货币。
 
-## 基本命令
+## 玩家使用教程
 
-所有的 CommandShop 命令都以 `/sd` 开头。您也可以使用 `/shop` 或 `/shangdian` 作为替代。
+### 基本命令
 
-## 查看帮助
+- `/sd` 或 `/shop` 或 `/shangdian`: 打开商店主菜单
+- `/sd help` 或 `/sd bangzhu`: 显示帮助信息
 
-要查看插件的帮助信息，请使用以下命令：
+### 搜索物品
 
-- `/sd help` 或 `/sd bangzhu` 或 `/sd bz`
+使用 `/sd sou <关键词> [页码]` 来搜索物品。例如：
+- `/sd sou 钻石`
+- `/sd sou 木头 2`
 
-这将显示所有可用命令的列表和简短说明。
+### 购买物品
 
-## 搜索物品
+1. 先使用搜索命令找到想要的物品
+2. 使用 `/sd mai <物品序号> <数量>` 购买物品。例如：
+   - `/sd mai 1 64` 购买搜索结果中第一个物品的 64 个
 
-要搜索商店中的物品，请使用以下命令：
+### 出售物品
 
-- `/sd search <关键词> [页码]` 或 `/sd sou <关键词> [页码]` 或 `/sd ss <关键词> [页码]`
+手持要出售的物品，然后使用 `/sd chu <数量> <货币> <价格>` 命令。例如：
+- `/sd chu 64 RMB 100` 以 100 RMB的价格出售手中物品的 64 个
 
-例如：
-- `/sd search 钻石` - 搜索所有与"钻石"相关的物品
-- `/sd sou 钻石 2` - 显示搜索结果的第二页
+### 管理自己的商品
 
-## 购买物品
+- 使用 `/sd wode` 查看你正在出售的商品
+- 使用 `/sd che <序号>` 撤回已上架的商品。例如：
+  - `/sd che 1` 撤回列表中的第一个商品
 
-在搜索物品后，您可以使用以下命令购买物品：
+### 小贴士
 
-- `/sd buy <物品序号> <数量>` 或 `/sd mai <物品序号> <数量>` 或 `/sd gm <物品序号> <数量>`
+- 使用 Tab 键可以自动补全命令
+- 如果物品很多，记得使用分页功能查看更多结果
+- 经常检查自己的出售列表，及时调整价格或撤回商品
 
-物品序号是在搜索结果中显示的编号。
+## 技术介绍
 
-例如：
-- `/sd buy 1 5` - 购买搜索结果中第一个物品 5 个
-- `/sd mai 3 10` - 购买搜索结果中第三个物品 10 个
+### 插件架构
 
-## 出售物品
+CommandShop 插件采用模块化设计，主要包含以下组件：
 
-要出售您手中的物品，请使用以下命令：
+1. `CommandShopPlugin`: 插件的主类，负责初始化各个管理器
+2. `ShopManager`: 处理商店的核心逻辑，如搜索、购买和出售
+3. `DatabaseManager`: 管理与数据库的交互，处理数据的存储和检索
+4. `EconomyManager`: 处理经济相关的操作，与 MultiCurrency 插件集成
+5. `ItemManager`: 处理物品相关的操作，如创建 ItemStack 和管理库存
+6. `ShopCommand`: 处理所有的命令输入和执行相应的操作
 
-- `/sd sell <数量> <货币> <价格>` 或 `/sd chu <数量> <货币> <价格>` 或 `/sd cs <数量> <货币> <价格>`
+### 主要特性
 
-例如：
-- `/sd sell 64 RMB 100` - 以 100 RMB的价格出售 64 个手中的物品
-- `/sd chu 32 USD 5` - 以 5 USD的价格出售 32 个手中的物品
+- 多货币支持：集成 MultiCurrency 插件，支持多货币交易
+- 高效搜索：使用数据库索引优化搜索性能
+- 物品序列化：使用自定义的 ItemSerializer 来存储和恢复复杂的物品数据
+- 翻译系统：支持物品名称的本地化翻译
+- 分页显示：大量搜索结果时支持分页显示
+- 命令补全：实现 TabCompleter 接口，提供智能命令补全功能
 
-注意：价格必须是大于 0 的整数。
+### 数据库结构
 
-## 撤回上架的物品
+插件使用 MySQL 数据库，主要表结构如下：
 
-如果您想撤回已经上架的物品，可以使用以下命令：
-
-- `/sd withdraw <物品ID>` 或 `/sd che <物品ID>` 或 `/sd chehui <物品ID>`
-
-物品ID 是每个上架物品的唯一标识符。您可以通过搜索自己上架的物品来找到这个 ID。
-
-例如：
-- `/sd withdraw 123` - 撤回 ID 为 123 的上架物品
-
-## 提示
-
-1. 在使用购买命令之前，请确保您已经进行了搜索，否则系统将无法识别物品序号。
-2. 出售物品时，请确保手中持有要出售的物品。
-3. 所有的价格和数量都必须是整数。
-4. 如果您忘记了具体的命令用法，随时可以使用 `/sd help` 查看帮助信息。
-
-祝您在服务器中交易愉快！
+```sql
+CREATE TABLE IF NOT EXISTS `shop_items` (
+    `id` INT AUTO_INCREMENT NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `price` INT NOT NULL,
+    `currency` VARCHAR(20) NOT NULL,
+    `stock` INT NOT NULL,
+    `hash` VARCHAR(255) NOT NULL,
+    `type` VARCHAR(50) NOT NULL,
+    `S_name` VARCHAR(16) NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `idx_shop_items_name` (`name`),
+    INDEX `idx_shop_items_price` (`price`),
+    INDEX `idx_shop_items_type` (`type`),
+    INDEX `idx_shop_items_seller` (`S_name`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8 COMMENT='命令商店表';
+```
