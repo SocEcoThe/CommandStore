@@ -1,84 +1,99 @@
 package org.cockshott.commandshop.utils;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TranslationManager {
-    private final Plugin plugin;
-    private final File modFolder;
-    private final Gson gson;
+    private final JavaPlugin plugin;
+    private Map<String, String> translations;
 
-    // 构造函数，初始化TranslationManager对象
-    public TranslationManager(Plugin plugin, File modFolder) {
+    public TranslationManager(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.modFolder = modFolder;
-        // 创建Gson对象，并采用自定义的跳过重复项的处理器
-        this.gson = new GsonBuilder()
-        .registerTypeAdapter(new TypeToken<Map<String, String>>(){}.getType(), new DuplicateKeyDeserializer())
-        .create();
+        loadTranslations();
     }
 
-    // 合并翻译内容的方法，接受一个原始翻译的Map作为参数
-    public Map<String, String> getMergedTranslations(Map<String, String> originalTranslations) {
-        // 使用原始翻译内容创建一个新的Map用于存储合并后的翻译结果
-        Map<String, String> mergedTranslations = originalTranslations;
+    private void loadTranslations() {
+        try (InputStreamReader reader = new InputStreamReader(
+                plugin.getResource("zh_cn.json"), "UTF-8")) {
+            Gson gson = new Gson();
+            Type type = new TypeToken<HashMap<String, String>>(){}.getType();
+            translations = gson.fromJson(reader, type);
+            plugin.getLogger().info("从 JSON 加载 " + translations.size() + " 个翻译");
+        } catch (Exception e) {
+            plugin.getLogger().severe("载入翻译时出错： " + e.getMessage());
+            translations = new HashMap<>(); // 确保 translations 不为 null
+        }
+    }
 
-        // 遍历mod文件夹中的所有文件
-        for (File modFile : modFolder.listFiles()) {
-            try {
-                // 打开mod文件（JAR文件）作为ZipFile
-                ZipFile modJar = new ZipFile(modFile);
-                Enumeration<? extends ZipEntry> entries = modJar.entries();
+    private static int levenshteinDistance(String s1, String s2) {
+        int[][] dp = new int[s1.length() + 1][s2.length() + 1];
 
-                // 遍历JAR文件中的所有条目
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-
-                    // 检查条目是否为"lang/zh_cn.json"文件
-                    if (entry.getName().endsWith("/lang/zh_cn.json")) {
-                        // 读取JSON文件内容并转换为Map<String, String>对象
-                        InputStream stream = modJar.getInputStream(entry);
-                        Reader reader = new InputStreamReader(stream,StandardCharsets.UTF_8);
-
-                        Type type = new TypeToken<Map<String, String>>(){}.getType();
-
-                        Map<String, String> modTranslations = gson.fromJson(reader, type);
-
-                        // 将mod的翻译内容合并到主翻译Map中
-                        mergedTranslations.putAll(modTranslations);
-                    }
+        for (int i = 0; i <= s1.length(); i++) {
+            for (int j = 0; j <= s2.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    dp[i][j] = min(dp[i - 1][j - 1]
+                                    + (s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1),
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1);
                 }
-
-                // 关闭JAR文件
-                modJar.close();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 
-        // 返回合并后的翻译结果
-        return mergedTranslations;
+        return dp[s1.length()][s2.length()];
     }
 
-    // 加载原始翻译内容的方法
-    public Map<String, String> loadOriginalTranslations() {
-        // 从插件资源中读取"zh_cn.json"文件并转换为Map<String, String>对象
-        InputStream resource = plugin.getResource("zh_cn.json");
-        return gson.fromJson(new InputStreamReader(resource), Map.class);
+    private static int min(int a, int b, int c) {
+        return Math.min(Math.min(a, b), c);
+    }
+
+    public String getTranslation(String key) {
+        // 尝试直接匹配
+        String directMatch = translations.get(key);
+        if (directMatch != null) {
+            return directMatch;
+        }
+
+        // 如果没有直接匹配，则尝试相似度匹配
+        String bestMatch = null;
+        int minDistance = Integer.MAX_VALUE;
+        String lowercaseKey = key.toLowerCase();
+
+        for (Map.Entry<String, String> entry : translations.entrySet()) {
+            String currentKey = entry.getKey().toLowerCase();
+            int distance = levenshteinDistance(lowercaseKey, currentKey);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestMatch = entry.getValue();
+            }
+        }
+
+        // 如果找到了相似的键，返回对应的翻译
+        if (bestMatch != null) {
+            return bestMatch;
+        }
+
+        // 如果没有找到任何匹配，返回原始的键
+        return key;
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    public void clearCache() {
+        translations.clear();
+        plugin.getLogger().info("已清除翻译缓存");
     }
 }
 

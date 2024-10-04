@@ -20,4 +20,19 @@ public class TableRenderer {
         player.sendMessage(MessageUtil.color("&8+----+----------------------+----------+---------+"));
         player.sendMessage(MessageUtil.color("&a使用 /sd mai <序号> <数量> 购买物品"));
     }
+
+    public static void renderPlayerItems(Player player, List<ShopItem> items) {
+        player.sendMessage(MessageUtil.color("&8+----+----------------------+----------+---------+---------+"));
+        player.sendMessage(MessageUtil.color("&8| &f序号 &8| &f物品名称             &8| &f价格     &8| &f剩余库存&8| &f货币    &8|"));
+        player.sendMessage(MessageUtil.color("&8+----+----------------------+----------+---------+---------+"));
+
+        for (int i = 0; i < items.size(); i++) {
+            ShopItem item = items.get(i);
+            player.sendMessage(MessageUtil.color(String.format("&8| &f%-4d&8| &f%-20s &8| &6%-8d &8| &a%-7d &8| &e%-7s &8|",
+                    i + 1, item.getName(), item.getPrice(), item.getStock(), item.getCurrency())));
+        }
+
+        player.sendMessage(MessageUtil.color("&8+----+----------------------+----------+---------+---------+"));
+        player.sendMessage(MessageUtil.color("&a使用 /sd che <序号> 撤回商品"));
+    }
 }

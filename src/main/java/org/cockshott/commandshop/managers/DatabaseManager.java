@@ -210,6 +210,37 @@ public class DatabaseManager {
         }
     }
 
+    public List<ShopItem> getPlayerItems(String playerName) {
+        String sql = "SELECT * FROM shop_items WHERE S_name = ? ORDER BY id DESC";
+        List<ShopItem> items = new ArrayList<>();
+
+        try {
+            return DatabaseUtils.executeQuery(dataSource, connection -> {
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.setString(1, playerName);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            items.add(new ShopItem(
+                                    rs.getInt("id"),
+                                    rs.getString("name"),
+                                    rs.getInt("price"),
+                                    rs.getString("currency"),
+                                    rs.getInt("stock"),
+                                    rs.getString("hash"),
+                                    rs.getString("type"),
+                                    rs.getString("S_name")
+                            ));
+                        }
+                    }
+                }
+                return items;
+            });
+        } catch (SQLException e) {
+            plugin.getLogger().severe("获取玩家商品时出错: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     public boolean itemExists(int itemId) throws SQLException {
         String sql = "SELECT 1 FROM shop_items WHERE id = ?";
         return DatabaseUtils.executeQuery(dataSource, connection -> {
